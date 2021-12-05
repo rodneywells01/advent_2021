@@ -1,4 +1,6 @@
-vents = dict()
+from collections import defaultdict 
+
+vents = defaultdict(int)
 def record_vent(start, end):
 	num_vents = max(abs(end[1] - start[1]), abs(end[0] - start[0])) + 1
 	direction_x = int((end[0] - start[0])/(num_vents - 1))
@@ -10,8 +12,7 @@ def record_vent(start, end):
 
 		if vents.get(key):
 			vents[key] += 1
-		else: 
-			vents[key] = 1
+		
 		
 def count_multiple_vents(): 
 	return sum([num_vents > 1 for num_vents in vents.values()])
