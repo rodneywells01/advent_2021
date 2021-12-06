@@ -39,7 +39,7 @@ def solve_part_one(fish_timers):
 
 
 def solve_part_two(fish_timers):
-    final_fish_timers = actual_old_solve(fish_timers, days=256)
+    final_fish_timers = solve(fish_timers, days=256)
     answer = sum(final_fish_timers.values())
     print(f"Part two: {answer} lanternfish")
     assert 1746710169834 == answer
