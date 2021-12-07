@@ -4,7 +4,6 @@ crab_positions = [1101,1,29,67,1102,0,1,65,1008,65,35,66,1005,66,28,1,67,65,20,4
 
 best = None 
 
-
 def calculate_total_fuel(start, end):
 	n = abs(end-start)
 	return n*(n+1)/2
@@ -18,7 +17,6 @@ for target_idx in range(worst_case_position):
 	for position in crab_positions:
 		total_fuel += calculate_total_fuel(position, target_idx)
 		if best and total_fuel > best:
-			print()
 			break
 	if not best or total_fuel < best: 
 		print(f"{total_fuel} beats {best}")
