@@ -16,8 +16,6 @@ def parse_input():
             # Add the relationship between the two caves 
             cave_nodes[cave_names[0]].add_neighbor(cave_names[1])
             cave_nodes[cave_names[1]].add_neighbor(cave_names[0])
-
-
         
     return cave_nodes
 
