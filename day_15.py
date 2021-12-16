@@ -17,191 +17,13 @@ def parse_input():
 class BFS_Search: 
     def __init__(self, maze):
         self.maze = maze
-        # self.safest_route = None 
-        self.start = (0,0)
-        # print(maze)
         self.goal = (len(maze[0])-1, len(maze)-1)
-
-
-        # Direct route 
-        self.safest_route = None 
-
-        self.best_risk_at_position = dict()
-        self.best_path = None
 
 
     def get_current_risk(self, position): 
         return self.maze[position[1]][position[0]]
 
-    def dive_to_goal(self, position): 
-        # We need to attempt to dive to the goal to improve our best_risk. 
-
-
-        path = self.maze[position[1]][position[0]:] + [row[len(self.maze[0]) - 1] for row in self.maze[position[1] + 1:]]
-        vert_path = [row[position[0]] for row in self.maze[position[1]:]] + self.maze[len(self.maze)-1][position[0]:]
-
-        # Risk is already included in this position
-        best_path = min(sum(path), sum(vert_path))
-
-        best_path -= self.maze[position[1]][position[0]]
-        return best_path
-
-    def search(self, path=None, current_position=(0,0), current_risk = 0, layer =0):
-        print(f"Exploring layer {layer} | {current_risk} | {self.safest_route}")
-        # print(path)
-
-
-        # Evaluate if we're making progress here or not. 
-        best_performance = self.best_risk_at_position.get(current_position) 
-        if not best_performance or best_performance > current_risk:
-            self.best_risk_at_position[current_position] = current_risk
-            # if path:
-            #     new_best_path = path.copy() 
-            #     new_best_path.add(current_position)
-            #     self.best_path = new_best_path
-        else: 
-            # There is no point in continuing to explore this path. 
-            # print(f"{current_risk} does not beat {self.best_risk_at_position[current_position]}")
-            return 
-
-        if not path: 
-            path = set()
-
-        if current_position == self.goal:
-            if current_risk < self.safest_route:
-                self.safest_route = min(self.safest_route, current_risk)
-                print(f"New safest route! Risk: {current_risk}")
-                self.paint_path(path)
-                self.best_path = path
-            print(f"Safest is {self.safest_route}")
-            return 
-
-        # if layer > 250: 
-        dive_risk = self.dive_to_goal(current_position) + current_risk
-        print(dive_risk)
-        self.safest_route = min(self.safest_route, self.dive_to_goal(current_position) + current_risk)
-
-        if current_risk >= self.safest_route:
-            # print(f"{current_risk} is too unsafe!")
-            return
-
-        # Get your neighbors and add them to the search. 
-        neighbors = self.get_neighbors(current_position) 
-
-        neighbors = set(neighbors) - path
-
-        if not neighbors: 
-            # print("Out of valid neighbors!")
-            return
-        # print(neighbors)
-
-        # Sort the neighbors based on their low cost. 
-        sorted_neighbors = [] 
-        lookup = defaultdict(list) 
-
-        for neighbor in neighbors:
-            risk = self.get_current_risk(neighbor)
-            lookup[risk].append(neighbor)
-
-        for key in sorted(list(lookup.keys())):
-            sorted_neighbors += lookup[key]
-
-        # risks = []
-        # for neighbor in sorted_neighbors:
-        #     risks.append(self.get_current_risk(neighbor))
-
-        # print(risks)
-
-        
-        # TODO - Prioritize by risk level 
-        for neighbor in sorted_neighbors: 
-            # print(f"Neighbor: {neighbor} | Path: {path}")
-            if neighbor not in path: 
-                # print(f"Neighbor: {neighbor} | Path: {path}")
-                new_path = path.copy()
-                new_path.add(neighbor)
-
-                # print(f"After adding: Neighbor: {neighbor} | Path: {path}")
-                self.search(
-                    new_path, 
-                    neighbor, 
-                    current_risk + self.maze[neighbor[1]][neighbor[0]],
-                    layer=layer+1
-                )
-
-
-        # We need to search. Find the neighbors and travel if we have not been there. 
-
-
-        if not path: 
-            print("Done!")
-            # print(safest_route)
-            return self.safest_route
-
-        return
-
-    def better_search(self, current_position=(0,0), current_risk = 0, layer =0):
-        # print(f"Exploring layer {layer} | {current_risk} | {self.safest_route}")
-
-        # Evaluate if we're making progress here or not. 
-        best_performance = self.best_risk_at_position.get(current_position) 
-        if not best_performance or best_performance >= current_risk:
-            self.best_risk_at_position[current_position] = current_risk
-        else: 
-            # There is no point in continuing to explore this path. 
-            print(f"{best_performance} is worse than {current_risk}")
-            return 
-
-        if current_position == self.goal:
-            if current_risk < self.safest_route:
-                print(f"Exploring layer {layer} | {current_risk} | {self.safest_route}")
-
-                self.safest_route = min(self.safest_route, current_risk)
-                # print(f"New safest route! Risk: {current_risk}")
-                # self.paint_path(path)
-                # self.best_path = path
-            print(f"Safest is {self.safest_route}")
-            return 
-
-        # if layer > 250: 
-        dive_risk = self.dive_to_goal(current_position) + current_risk
-        if self.safest_route > self.dive_to_goal(current_position) + current_risk:
-            self.safest_route = self.dive_to_goal(current_position) + current_risk
-            print(f"Exploring layer {layer} | {current_risk} | {self.safest_route}")
-
-        if current_risk > self.safest_route:
-            return
-
-        # Get your neighbors and add them to the search. 
-        neighbors = self.get_neighbors(current_position) 
-
-        
-        # TODO - Prioritize by risk level 
-        for neighbor in neighbors: 
-            # print(f"Neighbor: {neighbor} | Path: {path}")
-            best_cost = self.best_risk_at_position.get(neighbor)
-            cost_to_move = current_risk + self.get_current_risk(neighbor)
-
-            if not best_cost or best_cost > cost_to_move: 
-                self.best_risk_at_position[neighbor] = cost_to_move
-    
-                # print(f"After adding: Neighbor: {neighbor} | Path: {path}")
-                self.better_search(
-                    neighbor, 
-                    cost_to_move,
-                    layer=layer+1
-                )
-
-
-        # We need to search. Find the neighbors and travel if we have not been there. 
-        if layer == 0:
-            print("We're done!")
-            return self.safest_route
-        return
-
-    def best_search(self, current_position=(0,0), current_risk = 0):
-        # print(f"Exploring layer {layer} | {current_risk} | {self.safest_route}")
-
+    def search(self, current_position=(0,0), current_risk = 0):
         found_path = False 
 
         best_risk_to_positions = defaultdict(list) 
@@ -210,17 +32,16 @@ class BFS_Search:
         best_risk_to_positions[0] = [current_position]
         position_risk_lookup[current_position] = 0
 
-
         current_risk = -1
         best_path = None 
 
-        while not found_path: 
+        while not (best_path and current_risk <= best_path): 
             # Let's get the minimum risk we can work with
+            # TODO - Could get the min of the keys instead of this awkward increment
             positions = None
             while not positions:
                 current_risk += 1 
                 positions = best_risk_to_positions[current_risk]
-                
 
             print(f"Looking at risk level {current_risk} | {len(positions)} positions")
 
@@ -236,68 +57,7 @@ class BFS_Search:
                         if neighbor == self.goal and (not best_path or best_path > risk_to_position):
                             best_path = risk_to_position
 
-
-            if best_path and best_path <= current_risk: 
-                # We're done. 
-                break 
-
         return best_path
-
-
-
-
-
-        # Evaluate if we're making progress here or not. 
-        best_performance = self.best_risk_at_position.get(current_position) 
-        if not best_performance or best_performance >= current_risk:
-            self.best_risk_at_position[current_position] = current_risk
-        else: 
-            # There is no point in continuing to explore this path. 
-            print(f"{best_performance} is worse than {current_risk}")
-            return 
-
-        if current_position == self.goal:
-            if current_risk < self.safest_route:
-                print(f"Exploring layer {layer} | {current_risk} | {self.safest_route}")
-
-                self.safest_route = min(self.safest_route, current_risk)
-                # print(f"New safest route! Risk: {current_risk}")
-                # self.paint_path(path)
-                # self.best_path = path
-            print(f"Safest is {self.safest_route}")
-            return 
-
-        
-        if current_risk > self.safest_route:
-            return
-
-        # Get your neighbors and add them to the search. 
-        neighbors = self.get_neighbors(current_position) 
-
-        
-        # TODO - Prioritize by risk level 
-        for neighbor in neighbors: 
-            # print(f"Neighbor: {neighbor} | Path: {path}")
-            best_cost = self.best_risk_at_position.get(neighbor)
-            cost_to_move = current_risk + self.get_current_risk(neighbor)
-
-            if not best_cost or best_cost > cost_to_move: 
-                self.best_risk_at_position[neighbor] = cost_to_move
-    
-                # print(f"After adding: Neighbor: {neighbor} | Path: {path}")
-                self.better_search(
-                    neighbor, 
-                    cost_to_move,
-                    layer=layer+1
-                )
-
-
-        # We need to search. Find the neighbors and travel if we have not been there. 
-        if layer == 0:
-            print("We're done!")
-            return self.safest_route
-        return
-
 
     def paint_path(self, path):
         pretty_map = [["." for val in row] for row in self.maze]
@@ -341,11 +101,6 @@ class BFS_Search:
         return neighbors
 
 
-
-
-cave = parse_input()
-
-
 def generate_full_cave_map(cave): 
     original_width = len(cave[0])
     original_height = len(cave)
@@ -375,19 +130,10 @@ def generate_full_cave_map(cave):
     return cave
 
 
+cave = parse_input()
 cave = generate_full_cave_map(cave)
 cave_searcher = BFS_Search(cave)
 cave_searcher.display_cave()
 
-path = cave_searcher.best_search()
-print("Final result:")
-print(path)
-
-# print(cave_searcher.best_path)
-# cave_searcher.paint_path(cave_searcher.best_path)
-
-
-# neighbors = set(cave_searcher.get_neighbors((1,2))) 
-# cave_searcher.paint_path(neighbors)
-# print("Nice!")
-# print(neighbors)
+min_risk = cave_searcher.search()
+print(f"Final result: {min_risk}")
